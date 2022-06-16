@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <title><%=title%></title>
+</head>
+<body>
+    <%- include('../parth/nav') %>
+   
+<script src="https://unpkg.com/vue@3"></script>
+<div class="container">
+    <h1> You welcome to fuateres</h1>
+    <div id="appVue">
+        <form @submit.prevent="createdServer">
+            <div class="mb-3">
+              <input type="text" class="form-control" v-model="name" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+    <div class="spinner-border" role="status" v-if="servers.length===0">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    <ul class="list-group" v-else>
+        <li class="list-group-item" v-for="server in servers" @click="remove(server.id)">{{server.name}} {{server.country}}</li>
+      </ul>
+    </div>
+</div>
+<script>
+const { createApp } = Vue
+
+createApp({
+  data() {
+    return {
+      servers: [],
+      name: " "
+    }
+  },
+methods :{
+    async createdServer(){
+        const data = {
+            name: this.name,
+            country: "created"
+        }
+        const res = await fetch ('/api/servers', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        this.name = "";
+        const newServer = await res.json();
+        this.servers.push(newServer)
+},
+async remove (id){
+   await fetch (`/api/servers/${id}`, {method: "DELETE"})
+   this.servers = this.servers.filter(s=> s.id !== id)
+}
+},
+  async mounted (){
+      const res = await fetch('/api/servers');
+      this.servers = await res.json();
+}
+
+}).mount('#appVue')
+</script>
+</body>
+</html>
